@@ -1,101 +1,177 @@
-import Image from "next/image";
+/**
+ * The `Chat` component is the main entry point for the chat functionality in the application. It provides a user interface for generating and critiquing jokes based on user selections.
+ *
+ * The component uses the `useChat` hook to manage the chat messages and state. It renders a set of options for the user to select the type of joke and the tone, and provides buttons to generate a new joke and critique the previous joke.
+ *
+ * The generated joke or critique is displayed in a separate section of the component, and the user can continue the conversation by generating more jokes or critiquing the previous one.
+ *
+ * @returns {JSX.Element} The `Chat` component
+ */
+"use client";
 
-export default function Home() {
+import { useState } from "react";
+import { useChat } from "ai/react";
+
+/**
+ * The `Chat` component is the main entry point for the chat functionality in the application. It provides a user interface for generating and critiquing jokes based on user selections.
+ *
+ * The component uses the `useChat` hook to manage the chat messages and state. It renders a set of options for the user to select the type of joke and the tone, and provides buttons to generate a new joke and critique the previous joke.
+ *
+ * The generated joke or critique is displayed in a separate section of the component, and the user can continue the conversation by generating more jokes or critiquing the previous one.
+ *
+ * @returns {JSX.Element} The `Chat` component
+ */
+export default function Chat() {
+  const { messages, append, isLoading } = useChat();
+  const Options = [
+    { emoji: "🧑‍💼", value: "Jobs" },
+    { emoji: "📺", value: "TV Show" }, 
+    { emoji: "🐅", value: "Animals" },
+    { emoji: "🐅", value: "Dad-Jokes" },
+  ];
+  const tones = [
+    { emoji: "😊", value: "Apt" },
+    { emoji: "😏", value: "Edgy" },
+    { emoji: "😂", value: "Funny" },
+  ];
+
+  const [state, setState] = useState({
+    Option: "",
+    tone: "",
+  });
+
+  const handleChange = ({
+    target: { name, value },
+  }: React.ChangeEvent<HTMLInputElement>) => {
+    setState({
+      ...state,
+      [name]: value,
+    });
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <main className="mx-auto w-full p-24 flex flex-col">
+      <div className="p4 m-4">
+        <div className="flex flex-col items-center justify-center space-y-8 text-white">
+          <div className="space-y-2">
+            <h2 className="text-3xl font-bold">Joke Generator</h2>
+            <p className="text-zinc-500 dark:text-zinc-400">
+              Customize the Joke by selecting the option and tone.
+            </p>
+          </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          <div className="space-y-4 bg-opacity-25 bg-gray-700 rounded-lg p-4">
+            <h3 className="text-xl font-semibold">Option</h3>
+
+            <div className="flex flex-wrap justify-center">
+              {Options.map(({ value, emoji }) => (
+                <div
+                  key={value}
+                  className="p-4 m-2 bg-opacity-25 bg-gray-600 rounded-lg"
+                >
+                  <input
+                    id={value}
+                    type="radio"
+                    value={value}
+
+                    name="Option"
+                    onChange={handleChange}
+                  />
+                  <label className="ml-2" htmlFor={value}>
+                    {`${emoji} ${value}`}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-4 bg-opacity-25 bg-gray-700 rounded-lg p-4">
+            <h3 className="text-xl font-semibold">Tones</h3>
+
+            <div className="flex flex-wrap justify-center">
+              {tones.map(({ value, emoji }) => (
+                <div
+                  key={value}
+                  className="p-4 m-2 bg-opacity-25 bg-gray-600 rounded-lg"
+                >
+                  <input
+                    id={value}
+                    type="radio"
+                    name="tone"
+                    value={value}
+                    onChange={handleChange}
+                  />
+                  <label className="ml-2" htmlFor={value}>
+                    {`${emoji} ${value}`}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <button
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
+
+            disabled={isLoading || !state.Option || !state.tone}
+            onClick={() =>
+              {
+                append({
+                role: "user",
+
+                content: `Generate a ${state.Option} Joke in a ${state.tone} tone. start the response with the '++' keyword`,
+              });
+              
+            }
+
+            }
           >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            Generate Joke
+          </button>
+
+          <div
+            hidden={
+              messages.length === 0 ||
+              messages[messages.length - 1]?.content.startsWith("Generate") ||
+              messages[messages.length - 1]?.content.startsWith("Critique") ||
+              messages[messages.length - 1]?.content.startsWith("**")
+            }
+            className="bg-opacity-25 bg-gray-700 rounded-lg p-4"
           >
-            Read our docs
-          </a>
+            {
+            messages[messages.length - 1]?.content
+            }
+          </div>
+          
+          <button
+            className="mt-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+            hidden={
+              messages.length === 0 ||
+              messages[messages.length - 1]?.content.startsWith("Generate") ||
+              messages[messages.length - 1]?.content.startsWith("Critique")
+            }
+            onClick={() =>
+              append({
+                role: "user",
+                content: `Critique the following joke: "${messages[messages.length - 2]?.content}".  start the response with the '**' keyword`,
+              })
+            }
+          >
+            Critique
+          </button>
+
+          <div
+            hidden={
+              messages.length === 0 ||
+              messages[messages.length - 1]?.content.startsWith("Critique") ||
+              messages[messages.length - 1]?.content.startsWith("++") ||
+              messages[messages.length - 1]?.content.startsWith("Generate")
+            }
+            className="bg-opacity-25 bg-gray-700 rounded-lg p-4 mt-4"
+          >
+            {messages[messages.length - 1]?.content}
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      </div>
+    </main>
   );
 }
